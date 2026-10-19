@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero System Parent Dashboard</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: #0b1120; color: #fff; display: flex; height: 100vh; }
+        .sidebar { width: 250px; background-color: #111827; padding: 20px; border-right: 1px solid #1f2937; }
+        .logo { font-size: 20px; font-weight: bold; color: #3b82f6; margin-bottom: 30px; }
+        .menu-item { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #9ca3af; cursor: pointer; }
+        .menu-item.active { background-color: #1d4ed8; color: #fff; }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background-color: #111827; padding: 20px; border-radius: 10px; border: 1px solid #1f2937; }
+        .stat-card h3 { margin: 0 0 10px 0; color: #9ca3af; font-size: 14px; }
+        .stat-card .value { font-size: 28px; font-weight: bold; color: #3b82f6; }
+        .device-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .device-card { background-color: #111827; padding: 20px; border-radius: 10px; border: 1px solid #1f2937; }
+        .device-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .status { color: #10b981; font-size: 12px; background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 20px; }
+        .btn { background-color: #3b82f6; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">🛡️ ZERO SYSTEM</div>
+        <div class="menu-item active">Dashboard</div>
+        <div class="menu-item">Devices</div>
+        <div class="menu-item" onclick="window.location.href='membership.html'">Membership 💎</div>
+        <div class="menu-item">Location Tracker</div>
+        <div class="menu-item">Settings</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Parent Dashboard</h1>
+            <div style="color:#10b981;">System Online 🟢</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><h3>Total Devices</h3><div class="value" id="totalDevices">0</div></div>
+            <div class="stat-card"><h3>Online Devices</h3><div class="value" id="onlineDevices">0</div></div>
+            <div class="stat-card"><h3>Alerts</h3><div class="value">0</div></div>
+        </div>
+
+        <h2>Connected Kids Devices</h2>
+        <div class="device-grid" id="deviceList">
+            <p style="color: #9ca3af;">No devices connected yet. Open the Kids App to connect.</p>
+        </div>
+    </div>
+
+    <script>
+        async function fetchDevices() {
+            try {
+                const response = await fetch('/api/devices');
+                const devices = await response.json();
+                
+                document.getElementById('totalDevices').innerText = devices.length;
+                document.getElementById('onlineDevices').innerText = devices.length; // ডেমোতে সবাই অনলাইন
+
+                const deviceList = document.getElementById('deviceList');
+                if (devices.length === 0) return;
+
+                deviceList.innerHTML = '';
+                devices.forEach(device => {
+                    deviceList.innerHTML += `
+                        <div class="device-card">
+                            <div class="device-header">
+                                <div><strong>${device.device_id}</strong></div>
+                                <span class="status">Online</span>
+                            </div>
+                            <p style="font-size: 14px; color: #9ca3af;">Lat: ${device.lat.toFixed(4)}<br>Lng: ${device.lng.toFixed(4)}</p>
+                            <p style="font-size: 12px; color: #6b7280;">Last seen: ${device.last_seen}</p>
+                            <button class="btn" onclick="window.open('https://www.google.com/maps?q=${device.lat},${device.lng}', '_blank')">View on Map</button>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error fetching devices:", error);
+            }
+        }
+
+        // প্রতি ৫ সেকেন্ডে ডাটা আপডেট হবে
+        setInterval(fetchDevices, 5000);
+        fetchDevices();
+    </script>
+</body>
+</html>
